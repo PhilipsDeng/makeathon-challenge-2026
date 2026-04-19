@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 
 import boto3
-
 from botocore import UNSIGNED
 from botocore.config import Config
 from botocore.exceptions import NoCredentialsError, ClientError
@@ -13,7 +12,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def download_s3_folder(bucket_name: str, folder_name: str, local_dir: str = "./data") -> None:
+def download_s3_folder(bucket_name: str, folder_name: str, local_dir: str = "./data", anonymous: bool = False) -> None:
     """Downloads a specific folder from an S3 bucket to a local directory using boto3.
 
     Args:
@@ -21,7 +20,10 @@ def download_s3_folder(bucket_name: str, folder_name: str, local_dir: str = "./d
         folder_name (str): The folder inside the S3 bucket to download.
         local_dir (str): The local directory where the bucket contents will be saved.
     """
-    s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+    if anonymous:
+        s3 = boto3.client("s3", config=Config(signature_version=UNSIGNED))
+    else:
+        s3 = boto3.client("s3")
     prefix = folder_name.strip("/")
     if prefix:
         prefix = f"{prefix}/"
@@ -58,7 +60,11 @@ def download_s3_folder(bucket_name: str, folder_name: str, local_dir: str = "./d
         )
 
     except NoCredentialsError:
-        logger.error("AWS credentials not found.")
+        logger.error(
+            "AWS credentials not found."
+            " Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, or run `aws configure`,"
+            " or use --anon if the S3 bucket is publicly accessible."
+        )
         raise
     except ClientError as e:
         logger.error(f"AWS client error: {e}")
@@ -70,7 +76,8 @@ if __name__ == "__main__":
     parser.add_argument("--bucket_name", default="osapiens-terra-challenge", help="Name of the S3 bucket")
     parser.add_argument("--folder_name", default="makeathon-challenge", help="Name of the folder inside the S3 bucket")
     parser.add_argument("--local_dir", default="./data", help="Local directory to save files")
+    parser.add_argument("--anon", action="store_true", help="Use anonymous public S3 access")
 
     args = parser.parse_args()
 
-    download_s3_folder(args.bucket_name, args.folder_name, args.local_dir)
+    download_s3_folder(args.bucket_name, args.folder_name, args.local_dir, anonymous=args.anon)

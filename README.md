@@ -30,10 +30,29 @@ Create the virtual environment and install the dependencies:
 make install
 ```
 
+`Makefile` will auto-detect Python (prefers `python3.10`, then `python3`, then `python`).
+If you want to force a specific interpreter, run:
+
+```bash
+make install PYTHON=/path/to/python
+```
+
 Download the dataset:
 
 ```bash
 make download_data_from_s3
+```
+
+This requires AWS credentials to access S3. If the bucket is publicly accessible, you can instead run:
+
+```bash
+.venv/bin/python -m download_data --anon
+```
+
+Or use the make target with anonymous access:
+
+```bash
+make download_data_from_s3 DOWNLOAD_ANON=1
 ```
 
 This uses [download_data.py](./download_data.py) and stores the files under:

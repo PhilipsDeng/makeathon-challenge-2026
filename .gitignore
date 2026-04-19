@@ -1,0 +1,19 @@
+checkpoints/
+cache/
+logs/
+outputs/
+
+# Data / generated artifacts
+data
+data/
+submission/
+workshop/
+predictions/
+metrics/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Notebook/runtime temp files
+.ipynb_checkpoints/
